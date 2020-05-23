@@ -35,7 +35,7 @@ model.train(False)
 preprocess = transforms.Compose([transforms.ToTensor()])
 
 
-def dd_helper(image, layer, iterations, lr):
+def dd_helper(image, layer, iterations=10, lr=0.2):
     input_var = torch.tensor(preprocess(image).unsqueeze(0), requires_grad=True,
                              dtype=torch.float32)
     model.zero_grad()
@@ -54,7 +54,7 @@ def dd_helper(image, layer, iterations, lr):
     im = Image.fromarray(np.uint8(input_im * 255))
     return im
 
-def deep_dream(image, layer, iterations, lr, octave_scale, num_octaves):
+def deep_dream(image, layer, iterations=10, lr=0.2, octave_scale=2, num_octaves=1):
     if num_octaves>0:
         image1 = image.filter(ImageFilter.GaussianBlur(2))
         if (image1.size[0] / octave_scale < 1 or image1.size[1] / octave_scale < 1):
@@ -68,7 +68,7 @@ def deep_dream(image, layer, iterations, lr, octave_scale, num_octaves):
         image1 = image1.resize(size, Image.ANTIALIAS)
         image = ImageChops.blend(image, image1, 0.6)
     print("-------------- Recursive level: ", num_octaves, '--------------')
-    img_result = dd_helper(image, layer, iterations, lr)
+    img_result = dd_helper(image, layer, 10, 0.2)
     img_result = img_result.resize(image.size)
     img_result.save('result.jpg')
     
