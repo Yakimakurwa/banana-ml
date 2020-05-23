@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-predictor = Predictor("trained_model_dict")
+predictor = Predictor("deep_dream_model")
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -41,7 +41,8 @@ def start(update, context):
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('Ohh, you need my help. Alright.')
+   
 
 def error(update, context):
     """Log Errors caused by Updates."""
@@ -78,7 +79,7 @@ def get_photo(update, context):
 def main():
     """Start the bot."""
     print('Start')
-    updater = Updater("1227949969:AAF9NVc1rSX2XKBtlEGdYNednNAH0Y7-OPc", use_context=True)
+    updater = Updater("730845793:AAEarTNpZrkhXBZCpTddizfQwKpKTLJSO64", use_context=True)
         # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
