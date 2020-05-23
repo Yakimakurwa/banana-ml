@@ -45,9 +45,7 @@ def start(update, context):
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Ohh, you need my help. Alright.')
-    update.message.reply_text('I was made for changing your photo, so send me one and I will
-      make it look stranger.
-      Also you can tell me, which filter you want me to use.')
+    update.message.reply_text('I was made for changing your photo, so send me one and I will make itt look stranger.  Also you can tell me which filter you want me to use.')
     upate.message.reply_text('Also I can make echo, huh')
 
 def error(update, context):
