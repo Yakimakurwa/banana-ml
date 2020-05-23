@@ -70,6 +70,6 @@ def deep_dream(image, layer, iterations, lr, octave_scale, num_octaves):
     print("-------------- Recursive level: ", num_octaves, '--------------')
     img_result = dd_helper(image, layer, iterations, lr)
     img_result = img_result.resize(image.size)
-    plt.imshow(img_result)
-    return img_result
+    img_result.save('result.jpg')
+    
 
