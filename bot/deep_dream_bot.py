@@ -77,7 +77,7 @@ def get_photo(update, context):
    
 
     # load saved photo
-    new_photo = open('result.jpg', 'w')
+    new_photo = open('result.jpg', 'rb')
 
     # send photo
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=new_photo)
