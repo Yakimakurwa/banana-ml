@@ -17,7 +17,7 @@ import logging
 
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from predict_model import Predictor
+from deep_dream_model import Predictor
 
 from skimage.io import imread
 import skimage
@@ -29,6 +29,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 predictor = Predictor("deep_dream_model.py")
+print('----------------------------------predictor----------------------------')
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -68,11 +69,11 @@ def get_photo(update, context):
     # get photo file
     photo_file = update.message.photo[-1].get_file()
     # save photo
-    photo_file = Image.fromarray(skimage.img_as_ubyte(photo_file)).resize((512, 512))
+    #photo_file = Image.fromarray(skimage.img_as_ubyte(photo_file)).resize((512, 512))
     photo_file.download('user_photo.jpg')
     logger.info("Photo of %s: %s", user.first_name, 'user_photo.jpg')
     update.message.reply_text('Gorgeous! Got your photo')
-   
+    predictor.get_image_predict('user_photo.jpg')
 
     # load saved photo
     new_photo = open('result.jpg', 'rb')
