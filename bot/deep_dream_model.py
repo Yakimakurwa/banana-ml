@@ -23,53 +23,109 @@ import requests
 # class labels
 LABELS_URL = 'https://s3.amazonaws.com/outcome-blog/imagenet/labels.json'
 labels = {int(key):value for (key, value) in requests.get(LABELS_URL).json().items()}
-
+print('--------------------------labels----------------------------')
 from torchvision.models.inception import inception_v3
-model = inception_v3(pretrained=True,      # load existing weights
-                     transform_input=True, # preprocess input image the same way as in training
-              )
-
-model.aux_logits = False
-model.train(False)
+#model = inception_v3(pretrained=True,      # load existing weights
+ #                    transform_input=True, # preprocess input image the same way as in training
+  #            )
 
 preprocess = transforms.Compose([transforms.ToTensor()])
+#modulelist = list(model.children())
 
+#def dd_helper(image, layer=14, iterations=10, lr=0.2, index=954):
+ #   input_var = torch.tensor(preprocess(image).unsqueeze(0), requires_grad=True,
+  #                           dtype=torch.float32)
+   # model.zero_grad()
+#for i in range(iterations):
+ #      out = input_var
+  #      for j in range(layer):
+   #         out = modulelist[j](out)
+    ##    out = out[:, index]
+      #  loss = out.norm()
+       # loss.backward()
+       # input_var.data = input_var.data + lr * input_var.grad.data
+    
+   # input_im = input_var.data.squeeze(0).cpu()
+    #input_im.transpose_(0, 1)
+   # i#nput_im.transpose_(1, 2)
+   # in3put_im = np.clip(input_im, 0, 1)
+   # im = Image.fromarray(np.uint8(input_im * 255))
+   # return im
 
-def dd_helper(image, layer, iterations=10, lr=0.2):
-    input_var = torch.tensor(preprocess(image).unsqueeze(0), requires_grad=True,
+#def deep_dream(image, layer=14, iterations=10, lr=0.2, octave_scale=2, num_octaves=1):
+ #   if num_octaves>0:
+  #      image1 = image.filter(ImageFilter.GaussianBlur(2))
+   #     if (image1.size[0] / octave_scale < 1 or image1.size[1] / octave_scale < 1):
+    #        size = image1.size
+     #   else:
+      #      size = (int(image1.size[0] / octave_scale), int(image1.size[1] / octave_scale))
+        
+   # image1 = image1.resize(size, Image.ANTIALIAS)
+    #    image1 = deep_dream(image1, layer, iterations, lr, octave_scale, num_octaves-1)
+     #   size = (image.size[0], image.size[1])
+      #  image1 = image1.resize(size, Image.ANTIALIAS)
+       # image = ImageChops.blend(image, image1, 0.6)
+   # print("-------------- Recursive level: ", num_octaves, '--------------')
+   # img_result = dd_helper(image, 14, 10, 0.2)
+    #print('------------------------------------dd_helper-------------------------------')
+    #img_result = img_result.resize(image.size)
+    #return img_result
+    
+class Predictor:
+    def __init__(self, path='deep_dream_model'):
+        self.model = self.model = inception_v3(pretrained=True, transform_input=True)
+        self.model.aux_logits = False
+        self.model.train(False)
+        self.modulelist = list(self.model.children())
+        print('-----------------------------------init--------------------------------------------')
+
+    def dd_helper(image, layer=14, iterations=10, lr=0.2, index=954):
+        input_var = torch.tensor(preprocess(image).unsqueeze(0), requires_grad=True,
                              dtype=torch.float32)
-    model.zero_grad()
-    for i in range(iterations):
-        out = input_var
-        for j in range(layer):
-            out = modulelist[j](out)
-        loss = out.norm()
-        loss.backward()
-        input_var.data = input_var.data + lr * input_var.grad.data
-    
-    input_im = input_var.data.squeeze(0).cpu()
-    input_im.transpose_(0, 1)
-    input_im.transpose_(1, 2)
-    input_im = np.clip(input_im, 0, 1)
-    im = Image.fromarray(np.uint8(input_im * 255))
-    return im
+        self.model.zero_grad()
+        for i in range(iterations):
+            out = input_var
+            for j in range(layer):
+                out = modulelist[j](out)
+            out = out[:, index]
+            loss = out.norm()
+            loss.backward()
+            input_var.data = input_var.data + lr * input_var.grad.data
 
-def deep_dream(image, layer, iterations=10, lr=0.2, octave_scale=2, num_octaves=1):
-    if num_octaves>0:
-        image1 = image.filter(ImageFilter.GaussianBlur(2))
-        if (image1.size[0] / octave_scale < 1 or image1.size[1] / octave_scale < 1):
-            size = image1.size
-        else:
-            size = (int(image1.size[0] / octave_scale), int(image1.size[1] / octave_scale))
+        input_im = input_var.data.squeeze(0).cpu()
+        input_im.transpose_(0, 1)
+        input_im.transpose_(1, 2)
+        input_im = np.clip(input_im, 0, 1)
+        im = Image.fromarray(np.uint8(input_im * 255))
+        return im
+
+    def deep_dream(image, layer=14, iterations=10, lr=0.2, octave_scale=2, num_octaves=1):
+        if num_octaves>0:
+            image1 = image.filter(ImageFilter.GaussianBlur(2))
+            if (image1.size[0] / octave_scale < 1 or image1.size[1] / octave_scale < 1):
+                size = image1.size
+            else:
+                size = (int(image1.size[0] / octave_scale), int(image1.size[1] / octave_scale))
             
-        image1 = image1.resize(size, Image.ANTIALIAS)
-        image1 = deep_dream(image1, layer, iterations, lr, octave_scale, num_octaves-1)
-        size = (image.size[0], image.size[1])
-        image1 = image1.resize(size, Image.ANTIALIAS)
-        image = ImageChops.blend(image, image1, 0.6)
-    print("-------------- Recursive level: ", num_octaves, '--------------')
-    img_result = dd_helper(image, layer, 10, 0.2)
-    img_result = img_result.resize(image.size)
-    img_result.save('result.jpg')
-    
+            image1 = image1.resize(size, Image.ANTIALIAS)
+            image1 = deep_dream(image1)
+            size = (image.size[0], image.size[1])
+            image1 = image1.resize(size, Image.ANTIALIAS)
+            image = ImageChops.blend(image, image1, 0.6)
+        print("-------------- Recursive level: ", num_octaves, '--------------')
+        img_result = dd_helper(image)
+        img_result = img_result.resize(image.size)
+        return img_result
 
+    def get_image_predict(self, img_path='img_path.jpg'):
+        print('--------------------------------------------got image----------------------------')
+        image = Image.open(img_path).convert('RGB').resize((512, 512), Image.ANTIALIAS)
+        #img_tensor = torch.tensor(np.transpose(np.array(image), (2, 0, 1))).unsqueeze(0)
+        #print('Before normalize', torch.max(img_tensor))
+        #img_tensor = img_tensor / 255.
+        result = deep_dream(image)
+        result = result.data.numpy()
+        result = Image.fromarray(result)
+
+        print('-------------------------------------------------deep_dream-------------------------------------------')
+        result.save('result.jpg')
