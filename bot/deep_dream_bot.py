@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 predictor = Predictor("deep_dream_model.py")
 print('----------------------------------predictor----------------------------')
-
+option = 0
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
@@ -46,7 +46,7 @@ def start(update, context):
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Ohh, you need my help. Alright.')
-    update.message.reply_text('I was made for changing your photo, so send me one and I will make itt look stranger.  Also you can tell me which filter you want me to use.')
+    update.message.reply_text('I was made for changing your photo, so send me one and I will make itt look stranger.  Also you can tell me which filter you want me to use, from 1 to 14 and it is kinda random.')
     upate.message.reply_text('Also I can make echo, huh')
 
 def error(update, context):
@@ -59,9 +59,14 @@ def action(update, context):
     text_caps = ' '.join(context.args).upper()
     context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
 
-def echo(update, context):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+#def echo(update, context):
+ #   """Echo the user message."""
+  #  update.message.reply_text(update.message.text)
+
+def get_texture(update, context):
+    global option
+    option = update.message.text
+    update.message.reply_text('Good. Now send me a picture')
 
 def get_photo(update, context):
     """Echo the user message."""
@@ -72,8 +77,10 @@ def get_photo(update, context):
     #photo_file = Image.fromarray(skimage.img_as_ubyte(photo_file)).resize((512, 512))
     photo_file.download('user_photo.jpg')
     logger.info("Photo of %s: %s", user.first_name, 'user_photo.jpg')
-    update.message.reply_text('Gorgeous! Got your photo')
-    predictor.get_image_predict('user_photo.jpg')
+    update.message.reply_text('Well, got your photo. It will take time.')
+
+    global option
+    predictor.get_image_predict('user_photo.jpg', int(option))
 
     # load saved photo
     new_photo = open('result.jpg', 'rb')
@@ -94,7 +101,8 @@ def main():
     dp.add_handler(CommandHandler("action", action))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    #dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(Filters.text, get_texture)) 
     dp.add_handler(MessageHandler(Filters.photo, get_photo))
 
     # on noncommand i.e message - echo the message on Telegram
