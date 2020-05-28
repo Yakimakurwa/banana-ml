@@ -75,12 +75,10 @@ class Predictor:
         img_result = img_result.resize(image.size)
         return img_result
 
-    def get_image_predict(self, img_path='img_path.jpg'):
+    def get_image_predict(self, img_path='img_path.jpg', layer=0):
         print('--------------------------------------------got image----------------------------')
         image = Image.open(img_path).convert('RGB').resize((512, 512), Image.ANTIALIAS)
-        result = self.deep_dream(image, 14, 5, 0.3, 2, 2)
+        result = self.deep_dream(image, layer, 5, 0.3, 2, 2)
         print('-------------------------------------------first dream-------------------------------------')
-        #result = Image.fromarray(result)
-        #print('------------------------------------------------got result-------------------------------------------')
         result.save('result.jpg')
         print('---------------------------------------------------------result saved-----------------------------------------------')
