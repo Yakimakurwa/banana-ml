@@ -36,15 +36,15 @@ class Predictor:
         self.modulelist = list(self.model.children())
         print('-----------------------------------init--------------------------------------------')
 
-    def dd_helper(self, image, layer, iterations, lr, index):
+    def dd_helper(self, image, layer, iterations, lr):
         input_var = torch.tensor(preprocess(image).unsqueeze(0), requires_grad=True,
                              dtype=torch.float32)
         self.model.zero_grad()
         for i in range(iterations):
             out = input_var
             for j in range(layer):
-                out = modulelist[j](out)
-            out = out[:, index]
+                out = self.modulelist[j](out)
+            #out = out[:, index]
             loss = out.norm()
             loss.backward()
             input_var.data = input_var.data + lr * input_var.grad.data
@@ -65,23 +65,22 @@ class Predictor:
                 size = (int(image1.size[0] / octave_scale), int(image1.size[1] / octave_scale))
             
             image1 = image1.resize(size, Image.ANTIALIAS)
-            image1 = self.deep_dream(image1, 14, 5, 0.2, 2, 1)
+            image1 = self.deep_dream(image1, layer, iterations, lr, octave_scale, num_octaves-1)
             print('--------------------------------------------second deeam-----------------------------------')
             size = (image.size[0], image.size[1])
             image1 = image1.resize(size, Image.ANTIALIAS)
             image = ImageChops.blend(image, image1, 0.6)
         print("-------------- Recursive level: ", num_octaves, '--------------')
-        img_result = self.dd_helper(image, 14, 5, 0.2, 954)
+        img_result = self.dd_helper(image, layer, iterations, lr)
         img_result = img_result.resize(image.size)
         return img_result
 
     def get_image_predict(self, img_path='img_path.jpg'):
         print('--------------------------------------------got image----------------------------')
         image = Image.open(img_path).convert('RGB').resize((512, 512), Image.ANTIALIAS)
-        result = self.deep_dream(image, 14, 5, 0.2, 2, 1)
+        result = self.deep_dream(image, 14, 5, 0.3, 2, 2)
         print('-------------------------------------------first dream-------------------------------------')
-        result = result.data.numpy()
-        result = Image.fromarray(result)
-
-        print('-------------------------------------------------deep_dream-------------------------------------------')
+        #result = Image.fromarray(result)
+        #print('------------------------------------------------got result-------------------------------------------')
         result.save('result.jpg')
+        print('---------------------------------------------------------result saved-----------------------------------------------')
